@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Intelligence Assistant</title>
+
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+
+</head>
+<body>
+
+<div class="sidebar">
+
+
+<div class="logo">
+    🤖 <span>DocAI</span>
+</div>
+
+<ul class="menu">
+    <li><i class="fas fa-file-pdf"></i> PDF Assistant</li>
+    <li><i class="fas fa-comments"></i> Chat</li>
+    <li><i class="fas fa-list-check"></i> Keywords</li>
+    <li><i class="fas fa-chart-line"></i> Document Quality</li>
+    <li><i class="fas fa-brain"></i> AI Analysis</li>
+</ul>
+
+
+</div>
+
+<div class="main-content">
+
+
+<div class="header">
+
+    <h1>AI Document Intelligence Assistant</h1>
+
+    <p>
+        Analyze PDFs using Gemini AI, FAISS Vector Search and
+        Retrieval-Augmented Generation (RAG). Generate summaries,
+        extract key concepts, perform document analysis and
+        chat intelligently with your documents.
+    </p>
+
+</div>
+
+<div class="dashboard-cards">
+
+    <div class="card">
+        <h3>{{ page_count }}</h3>
+        <p>Pages</p>
+    </div>
+
+    <div class="card">
+        <h3>{{ word_count }}</h3>
+        <p>Words</p>
+    </div>
+
+    <div class="card">
+        <h3>{{ chunk_count }}</h3>
+        <p>Chunks</p>
+    </div>
+
+    <div class="card">
+        <h3>{{ chat_history|length }}</h3>
+        <p>Messages</p>
+    </div>
+
+</div>
+
+<div class="result-card">
+
+    <h2>🚀 Project Features</h2>
+
+    <ul class="feature-list">
+        <li>📄 Upload Any PDF</li>
+        <li>🤖 Gemini AI Integration</li>
+        <li>⚡ FAISS Semantic Search</li>
+        <li>🧠 Retrieval-Augmented Generation (RAG)</li>
+        <li>📋 Keyword & Skill Extraction</li>
+        <li>📄 Intelligent Summarization</li>
+        <li>📈 Document Quality Analysis</li>
+        <li>📊 Advanced Document Analysis</li>
+        <li>💬 Chat with Documents</li>
+    </ul>
+
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+
+    <div class="upload-card">
+
+        <h2>📄 Upload PDF Document</h2>
+
+        <input
+            type="file"
+            name="pdf"
+            accept=".pdf">
+
+    </div>
+
+    {% if filename %}
+
+    <div class="success-box">
+        ✅ {{ filename }} uploaded successfully
+    </div>
+
+    {% endif %}
+
+    <div class="chat-input">
+
+        <input
+            type="text"
+            name="question"
+            placeholder="Ask anything about your document...">
+
+        <button
+            type="submit"
+            name="action"
+            value="ask">
+
+            <i class="fas fa-paper-plane"></i>
+            Ask AI
+
+        </button>
+
+    </div>
+
+    <div id="loading" style="display:none;">
+        🤖 Thinking...
+    </div>
+
+    <div class="action-buttons">
+
+        <button
+            type="submit"
+            name="action"
+            value="summary">
+
+            📄 Summary
+
+        </button>
+
+        <button
+            type="submit"
+            name="action"
+            value="skills">
+
+            📋 Keywords
+
+        </button>
+
+        <button
+            type="submit"
+            name="action"
+            value="ats">
+
+            📈 Document Quality
+
+        </button>
+
+        <button
+            type="submit"
+            name="action"
+            value="review">
+
+            📊 Document Analysis
+
+        </button>
+
+        <button
+            type="submit"
+            name="action"
+            value="clear_chat">
+
+            🗑️ Clear Chat
+
+        </button>
+
+    </div>
+
+</form>
+
+{% if filename %}
+
+<div class="result-card">
+
+    <h2>📂 Current Document</h2>
+
+    <p><strong>{{ filename }}</strong></p>
+
+</div>
+
+{% endif %}
+
+{% if ats %}
+
+<div class="result-card">
+
+    <h2>📈 Document Quality</h2>
+
+    <div class="progress-bar">
+
+        <div
+            class="progress-fill"
+            style="width: {{ ats }}%;">
+
+            {{ ats }}%
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% if summary %}
+
+<div class="result-card">
+
+    <h2>📄 Document Summary</h2>
+
+    <pre>{{ summary }}</pre>
+
+</div>
+
+{% endif %}
+
+{% if skills %}
+
+<div class="result-card">
+
+    <h2>📋 Keywords & Concepts</h2>
+
+    <div class="skills-container">
+        <pre>{{ skills }}</pre>
+    </div>
+
+</div>
+
+{% endif %}
+
+{% if review %}
+
+<div class="result-card">
+
+    <h2>📊 Document Analysis</h2>
+
+    <div class="skills-container">
+        <pre>{{ review }}</pre>
+    </div>
+
+</div>
+
+{% endif %}
+
+{% if answer %}
+
+<div class="result-card">
+
+    <h2>🤖 AI Response</h2>
+
+    <pre>{{ answer }}</pre>
+
+</div>
+
+{% endif %}
+
+<div class="chat-container">
+
+    <h2>💬 Conversation</h2>
+
+    {% if chat_history|length == 0 %}
+
+    <div class="empty-chat">
+        Ask a question to start chatting with your document.
+    </div>
+
+    {% endif %}
+
+    {% for role, message in chat_history %}
+
+        {% if role == "You" %}
+
+        <div class="user-bubble">
+
+            <strong>{{ role }}</strong>
+
+            <p>{{ message }}</p>
+
+        </div>
+
+        {% else %}
+
+        <div class="ai-bubble">
+
+            <strong>{{ role }}</strong>
+
+            <pre>{{ message }}</pre>
+
+        </div>
+
+        {% endif %}
+
+    {% endfor %}
+
+</div>
+
+<footer>
+
+    Built with Flask • Python • Gemini AI • FAISS •
+    Sentence Transformers • Retrieval-Augmented Generation (RAG)
+
+</footer>
+
+
+</div>
+
+<script>
+document.querySelector("form").addEventListener("submit", function() {
+    document.getElementById("loading").style.display = "block";
+});
+</script>
+
+</body>
+</html>
